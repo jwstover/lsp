@@ -1,0 +1,35 @@
+/Applications/CLion.app/Contents/bin/cmake/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /Users/jwstover/Documents/UChicago/Spring/research/Anim
+CMake Warning (dev) at teem/CMake/TestQnanhibit.cmake:33 (IF):
+  Policy CMP0054 is not set: Only interpret if() arguments as variables or
+  keywords when unquoted.  Run "cmake --help-policy CMP0054" for policy
+  details.  Use the cmake_policy command to set the policy and suppress this
+  warning.
+
+  Quoted variables like "HAVE_QNANHIBIT_VALUE" will no longer be dereferenced
+  when the policy is set to NEW.  Since the policy is not set the OLD
+  behavior will be used.
+Call Stack (most recent call first):
+  teem/CMakeLists.txt:80 (TEST_QNANHIBIT)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at teem/CMakeLists.txt:451 (EXPORT_LIBRARY_DEPENDENCIES):
+  Policy CMP0033 is not set: The export_library_dependencies command should
+  not be called.  Run "cmake --help-policy CMP0033" for policy details.  Use
+  the cmake_policy command to set the policy and suppress this warning.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning at /Applications/CLion.app/Contents/bin/cmake/share/cmake-3.10/Modules/FindBoost.cmake:801 (message):
+  New Boost version may have incorrect or missing dependencies and imported
+  targets
+Call Stack (most recent call first):
+  /Applications/CLion.app/Contents/bin/cmake/share/cmake-3.10/Modules/FindBoost.cmake:907 (_Boost_COMPONENT_DEPENDENCIES)
+  /Applications/CLion.app/Contents/bin/cmake/share/cmake-3.10/Modules/FindBoost.cmake:1542 (_Boost_MISSING_DEPENDENCIES)
+  CMakeLists.txt:20 (find_package)
+
+
+-- Boost version: 1.66.0
+-- Found the following Boost libraries:
+--   program_options
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /Users/jwstover/Documents/UChicago/Spring/research/Anim/cmake-build-debug
