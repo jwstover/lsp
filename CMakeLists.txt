@@ -1,22 +1,22 @@
 cmake_minimum_required(VERSION 3.10)
-project(Anim)
+project(lsp)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(Teem_DIR ${CMAKE_SOURCE_DIR}/teem)
-
-add_subdirectory(teem)
-
 file(GLOB SOURCES "src/*.cpp" "include/*.h")
 
-add_executable(Anim ${SOURCES})
-set(Boost_USE_STATIC_LIBS        ON)
-set(Boost_USE_MULTITHREADED      ON)
-set(Boost_USE_STATIC_RUNTIME    OFF)
+add_executable(lsp ${SOURCES})
 
-find_package(Boost 1.66.0 COMPONENTS program_options)
-include_directories(${Boost_INCLUDE_DIRS})
-target_link_libraries(Anim ${Boost_LIBRARIES} teem)
+find_package(teem)
+
+#Adding Boost program_options
+set(Boost_INCLUDE_DIR /usr/local/boost_1_65_1)
+set(Boost_LIBRARY_DIR /usr/local/boost_1_65_1/stage/lib)
+find_package(Boost COMPONENTS program_options REQUIRED)
+include_directories(${Boost_INCLUDE_DIR})
+link_directories(${Boost_LIBRARY_DIR})
+
+target_link_libraries(lsp ${Boost_LIBRARIES} teem)
