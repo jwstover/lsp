@@ -5,6 +5,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
   "/Users/jwstover/Documents/UChicago/Spring/research/lsp/src/main.cpp" "/Users/jwstover/Documents/UChicago/Spring/research/lsp/cmake-build-debug/CMakeFiles/lsp.dir/src/main.cpp.o"
+  "/Users/jwstover/Documents/UChicago/Spring/research/lsp/src/skimczi.cpp" "/Users/jwstover/Documents/UChicago/Spring/research/lsp/cmake-build-debug/CMakeFiles/lsp.dir/src/skimczi.cpp.o"
   "/Users/jwstover/Documents/UChicago/Spring/research/lsp/src/util.cpp" "/Users/jwstover/Documents/UChicago/Spring/research/lsp/cmake-build-debug/CMakeFiles/lsp.dir/src/util.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "AppleClang")
@@ -13,6 +14,7 @@ set(CMAKE_CXX_COMPILER_ID "AppleClang")
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../include"
   "../src"
+  "/usr/include/libxml2"
   "/usr/local/boost_1_65_1"
   )
 

@@ -12,7 +12,8 @@ int main(int argc, char** argv) {
   try {
     desc.add_options()
             ("help,h", "help message here...")
-            ("config-file,c", "configuration file");
+            ("config-file,c", "configuration file")
+            ("skim", "Run skimczi on file or directory");
 
     po::variables_map vm;
 

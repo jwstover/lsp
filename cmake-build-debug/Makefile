@@ -150,6 +150,33 @@ src/main.cpp.s:
 	$(MAKE) -f CMakeFiles/lsp.dir/build.make CMakeFiles/lsp.dir/src/main.cpp.s
 .PHONY : src/main.cpp.s
 
+src/skimczi.o: src/skimczi.cpp.o
+
+.PHONY : src/skimczi.o
+
+# target to build an object file
+src/skimczi.cpp.o:
+	$(MAKE) -f CMakeFiles/lsp.dir/build.make CMakeFiles/lsp.dir/src/skimczi.cpp.o
+.PHONY : src/skimczi.cpp.o
+
+src/skimczi.i: src/skimczi.cpp.i
+
+.PHONY : src/skimczi.i
+
+# target to preprocess a source file
+src/skimczi.cpp.i:
+	$(MAKE) -f CMakeFiles/lsp.dir/build.make CMakeFiles/lsp.dir/src/skimczi.cpp.i
+.PHONY : src/skimczi.cpp.i
+
+src/skimczi.s: src/skimczi.cpp.s
+
+.PHONY : src/skimczi.s
+
+# target to generate assembly for a file
+src/skimczi.cpp.s:
+	$(MAKE) -f CMakeFiles/lsp.dir/build.make CMakeFiles/lsp.dir/src/skimczi.cpp.s
+.PHONY : src/skimczi.cpp.s
+
 src/util.o: src/util.cpp.o
 
 .PHONY : src/util.o
@@ -189,6 +216,9 @@ help:
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
+	@echo "... src/skimczi.o"
+	@echo "... src/skimczi.i"
+	@echo "... src/skimczi.s"
 	@echo "... src/util.o"
 	@echo "... src/util.i"
 	@echo "... src/util.s"

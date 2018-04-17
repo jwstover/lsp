@@ -1,5 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/lsp.dir/src/main.cpp.o"
+  "CMakeFiles/lsp.dir/src/skimczi.cpp.o"
   "CMakeFiles/lsp.dir/src/util.cpp.o"
   "lsp.pdb"
   "lsp"
