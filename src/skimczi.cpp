@@ -17,6 +17,7 @@
 #include <libxml/tree.h>
 
 #include <teem/meet.h>
+#include <CLI11.hpp>
 
 #include "skimczi.h"
 
@@ -208,111 +209,79 @@ update_projections(ImageDims *dims,     // Image metadata
   return;
 }
 
+void setup_skim(CLI::App &app) {
+  auto opt = std::make_shared<SkimOptions>();
+  auto sub = app.add_subcommand("skim", "Utility for getting information out of CZI files. Currently for "
+                                        "generating .nhdr NRRD header files to permit extracting the image "
+                                        "and essential meta data from CZI file.");
 
+  sub->add_option("file", opt->file, "Input CZI file to process")->required();
+  sub->add_option("-v, --verbose", opt->verbose, "Level of verbose debugging messages");
+  sub->add_option("-n, --nhdr", opt->no, "Filename for output nrrd header ending in \".nhdr\". (Default: .czi file name)");
+  sub->add_option("-x, --xml", opt->xo, "Filename for output XML metadata. (Default: .czi file name)");
+  sub->add_option("-p, --proj", opt->po, "Given a non-empty string \"foo\" axis-aligned projections saved out as foo-projXY.nrrd, foo-projXZ.nrrd, and foo-projYZ.nrrd. ");
 
+  sub->set_callback([opt]() { skim_main(*opt); });
+}
 
-const char *infoStr =
-        ("Utility for getting information out of CZI files. Currently for "
-         "generating .nhdr NRRD header files to permit extracting the image "
-         "and essential meta data from CZI file");
+int skim_main(SkimOptions const &opt){
 
-int main(int argc, const char* argv[] ){
+  std::string cziFileName = opt.file,
+       projBaseFileName = opt.po,
+       _xmlFileName = opt.xo,
+       _nhdrFileName = opt.no;
 
-  /* things parsed by hest */
-  char *cziFileName, *projBaseFileName, *_xmlFileName, *_nhdrFileName;
-  int verbose;
+  int verbose = opt.verbose;
 
-  const char *me = argv[0];
   airArray *mop = airMopNew();
-  hestParm *hparm = hestParmNew();
-  airMopAdd(mop, hparm, AIR_CAST(airMopper, hestParmFree), airMopAlways);
-  hestOpt *hopt = NULL;
-  hestOptAdd(&hopt, NULL, "czi", airTypeString, 1, 1, &cziFileName, NULL,
-             "input CZI file to process");
-  hestOptAdd(&hopt, "v", "verbose", airTypeInt, 1, 1, &verbose, "1",
-             "level of verbose debugging messages");
-  unsigned int hino, hixo;
-  hino = hestOptAdd(&hopt, "no", "nhdr", airTypeString, 1, 1, &_nhdrFileName, "",
-                    "filename for output nrrd header (should end with "
-                    "\".nhdr\". If this option is not used, the filename "
-                    "will be based on the input czi filename "
-                    "(removing .czi and adding .nhdr");
-  hixo = hestOptAdd(&hopt, "xo", "xml", airTypeString, 1, 1, &_xmlFileName, "",
-                    "filename for output XML metadata. If this option is "
-                    "not used, the filename will be based on the input czi "
-                    "filename (removing .czi and adding .xml");
-  hestOptAdd(&hopt, "po", "proj", airTypeString, 1, 1, &projBaseFileName, "",
-             "If given a non-empty string \"foo\" is given here, "
-             "then axis-aligned projections are computed as data is read, "
-             "and will be saved out as foo-projXY.nrrd, foo-projXZ.nrrd, "
-             "and foo-projYZ.nrrd. ");
-  hestParseOrDie(hopt, argc-1, argv+1, hparm,
-                 "skimczi", infoStr, AIR_TRUE, AIR_TRUE, AIR_TRUE);
-  airMopAdd(mop, hopt, AIR_CAST(airMopper, hestOptFree), airMopAlways);
-  airMopAdd(mop, hopt, AIR_CAST(airMopper, hestParseFree), airMopAlways);
 
-  if (!strcmp("--help", cziFileName)) {
-    hestUsage(stderr, hopt, "skimczi", hparm);
-    hestGlossary(stderr, hopt, hparm);
-    airMopOkay(mop);
-    exit(0);
-  }
-  char *suff = strstr(cziFileName, ".czi");
-  if (!suff || (suff != cziFileName + strlen(cziFileName) - strlen(".czi"))) {
-    fprintf(stderr, "%s: sorry, confused by input \"%s\" not ending with .czi\n",
-            me, cziFileName);
+  u_long suff = cziFileName.rfind(".czi");
+  if (!suff || (suff != cziFileName.length() - 4)) {
+    std::cerr << "skim_main: sorry, confused by input " << cziFileName << " not ending with .czi\n";
     airMopError(mop);
     exit(1);
   }
-  char *baseName = strdup(cziFileName);
-  assert(baseName);
-  airMopAdd(mop, baseName, airFree, airMopAlways);
-  baseName[suff - cziFileName] = '\0';
 
-  char *nhdrFileName;
-  if (hestSourceDefault == hopt[hino].source) {
+  std::string baseName = cziFileName.substr(0,suff);
+
+  std::string nhdrFileName;
+  if (_nhdrFileName.empty()) {
     /* the -no option was not used */
-    nhdrFileName = (char*)malloc(strlen(baseName)+strlen(".nhdr")+1);
-    assert(nhdrFileName);
-    airMopAdd(mop, nhdrFileName, airFree, airMopAlways);
-    sprintf(nhdrFileName, "%s.nhdr", baseName);
+    nhdrFileName = baseName + ".nhdr";
   } else {
     /* this was explicitly given with -no, so use it */
     nhdrFileName = _nhdrFileName;
   }
   /* HEY copy and paste from above */
-  char *xmlFileName;
-  if (hestSourceDefault == hopt[hixo].source) {
+  std::string xmlFileName;
+  if (_xmlFileName.empty()) {
     /* the -xo option was not used */
-    xmlFileName = (char*)malloc(strlen(baseName)+strlen(".xml")+1);
-    assert(xmlFileName);
-    airMopAdd(mop, xmlFileName, airFree, airMopAlways);
-    sprintf(xmlFileName, "%s.xml", baseName);
+    xmlFileName = baseName + ".xml";
   } else {
     /* this was explicitly given with -xo, so use it */
     xmlFileName = _xmlFileName;
   }
 
   if (verbose) {
-    fprintf(stdout, "===========FILES==========\n");
-    fprintf(stdout, "CZI  : %s\n", cziFileName);
-    fprintf(stdout, "NHDR : %s\n", nhdrFileName);
-    fprintf(stdout, "XML  : %s\n", xmlFileName);
-    if (strlen(projBaseFileName)) {
-      fprintf(stdout, "PROJs: %s-projXX.nrrd\n", projBaseFileName);
+    std::cout << "===========FILES==========\n";
+    std::cout << "CZI  : " <<  cziFileName << "\n";
+    std::cout << "NHDR : " <<  nhdrFileName << "\n";
+    std::cout << "XML  : " <<  xmlFileName << "\n";
+    if (projBaseFileName.length()) {
+      std::cout << "PROJs: " << projBaseFileName << "-projXX.nrrd\n";
     }
-    fprintf(stdout, "==========================\n\n");
+    std::cout << "==========================\n\n";
   }
 
   // Open the files
-  int cziFile  = open(cziFileName, O_RDONLY);
+  int cziFile  = open(cziFileName.c_str(), O_RDONLY);
   if (errno){
-    fprintf(stderr, "%s: Error opening %s : %s.\n", me, cziFileName, strerror(errno));
+    std::cerr << "skim_main: Error opening " << cziFileName << " : " << strerror(errno) << ".\n";
     airMopError(mop);
     exit(1);
   }
-  FILE * nhdrFile = fopen(nhdrFileName, "w");
-  int xmlFile  = open(xmlFileName, O_TRUNC | O_CREAT | O_WRONLY, 0666);
+  FILE * nhdrFile = fopen(nhdrFileName.c_str(), "w");
+  int xmlFile  = open(xmlFileName.c_str(), O_TRUNC | O_CREAT | O_WRONLY, 0666);
 
   // Re-used for all SID segments
   SID *currentSID = (SID*)malloc(sizeof(SID));
@@ -335,11 +304,11 @@ int main(int argc, const char* argv[] ){
       read(cziFile, headerInfo, 512);
       if (verbose) {
         fprintf(stdout, "==========HEADER==========\n");
-        fprintf(stdout, "Major      : %"PRIu32"\n", headerInfo->Major);
-        fprintf(stdout, "Minor      : %"PRIu32"\n", headerInfo->Minor);
-        fprintf(stdout, "FilePart   : %"PRIu32"\n", headerInfo->FilePart);
-        fprintf(stdout, "MetaDataPos: %"PRIu64"\n", headerInfo->MetadataPosition);
-        fprintf(stdout, "UpdatePend : %"PRIu32"\n", headerInfo->UpdatePending);
+        fprintf(stdout, "Major      : %" PRIu32"\n", headerInfo->Major);
+        fprintf(stdout, "Minor      : %" PRIu32"\n", headerInfo->Minor);
+        fprintf(stdout, "FilePart   : %" PRIu32"\n", headerInfo->FilePart);
+        fprintf(stdout, "MetaDataPos: %lu\n", headerInfo->MetadataPosition);
+        fprintf(stdout, "UpdatePend : %" PRIu32"\n", headerInfo->UpdatePending);
         fprintf(stdout, "==========================\n\n");
       }
 
@@ -361,7 +330,7 @@ int main(int argc, const char* argv[] ){
   // Read the metadata SID
   read(cziFile, currentSID, 32);
   if (strcmp(currentSID->id, "ZISRAWMETADATA") != 0){
-    fprintf(stderr, "%s: Metadata not where we expected it.\n", me);
+    fprintf(stderr, "skim_main: Metadata not where we expected it.\n");
     airMopError(mop);
     exit(1);
   }
@@ -372,8 +341,8 @@ int main(int argc, const char* argv[] ){
   read(cziFile, metaDataSegment, 256);
   if (verbose) {
     fprintf(stdout, "=========METADATA=========\n");
-    fprintf(stdout, "XmlSize    : %"PRIu32"\n", metaDataSegment->XmlSize);
-    fprintf(stdout, "AttachSize : %"PRIu32"\n", metaDataSegment->AttachmentSize);
+    fprintf(stdout, "XmlSize    : %" PRIu32"\n", metaDataSegment->XmlSize);
+    fprintf(stdout, "AttachSize : %" PRIu32"\n", metaDataSegment->AttachmentSize);
     fprintf(stdout, "==========================\n\n");
   }
 
@@ -499,7 +468,7 @@ int main(int argc, const char* argv[] ){
   // float *proj_min_yz = NULL;
   float *proj_mean_yz = NULL;
   Nrrd *ncurrent = NULL, *nproj_xy = NULL, *nproj_xz = NULL, *nproj_yz = NULL;
-  if (strlen(projBaseFileName)) {
+  if (projBaseFileName.length()) {
     /* Allocate space for current slice in both raw and float,
        and for the projections */
     current_raw = malloc(dims->sizeX * dims->sizeY * dims->pixelSize);
@@ -529,7 +498,7 @@ int main(int argc, const char* argv[] ){
                         sizeY, sizeZ, sizeC, sizeP)) {
       char *err = biffGetDone(NRRD);
       airMopAdd(mop, err, airFree, airMopAlways);
-      fprintf(stderr, "%s: couldn't allocate projection buffers:\n%s", me, err);
+      fprintf(stderr, "skim_main: couldn't allocate projection buffers:\n%s", err);
       airMopError(mop);
       return 1;
     }
@@ -606,18 +575,18 @@ int main(int argc, const char* argv[] ){
       if (verbose > 1) {
         fprintf(stdout, "======ZISRAWSUBBLOCK======\n");
         fprintf(stdout, "ID       : %s\n", currentSID->id);
-        fprintf(stdout, "POS      : %zd\n", lseek(cziFile, 0, SEEK_CUR)-32);
-        fprintf(stdout, "allocSize: %"PRIu64"\n", currentSID->allocatedSize);
-        fprintf(stdout, "usedSize : %"PRIu64"\n", currentSID->usedSize);
+        fprintf(stdout, "POS      : %lld\n", lseek(cziFile, 0, SEEK_CUR)-32);
+        fprintf(stdout, "allocSize: %lu\n", currentSID->allocatedSize);
+        fprintf(stdout, "usedSize : %lu\n", currentSID->usedSize);
         fprintf(stdout, "--------CONTENTS----------\n");
-        fprintf(stdout, "MetadataSize   : %"PRIu32"\n",imageSubBlockHeader->MetadataSize);
-        fprintf(stdout, "AttachmentSize : %"PRIu32"\n",imageSubBlockHeader->AttachmentSize);
-        fprintf(stdout, "DataSize       : %"PRIu64"\n",imageSubBlockHeader->DataSize);
-        fprintf(stdout, "PixelType      : %"PRIu32"\n",imageSubBlockHeader->PixelType);
-        fprintf(stdout, "FilePosition   : %"PRIu64"\n",imageSubBlockHeader->FilePosition);
-        fprintf(stdout, "FilePart       : %"PRIu32"\n",imageSubBlockHeader->FilePart);
-        fprintf(stdout, "Compression    : %"PRIu32"\n",imageSubBlockHeader->Compression);
-        fprintf(stdout, "DimensionCount : %"PRIu32"\n",imageSubBlockHeader->DimensionCount);
+        fprintf(stdout, "MetadataSize   : %" PRIu32"\n",imageSubBlockHeader->MetadataSize);
+        fprintf(stdout, "AttachmentSize : %" PRIu32"\n",imageSubBlockHeader->AttachmentSize);
+        fprintf(stdout, "DataSize       : %lu\n",imageSubBlockHeader->DataSize);
+        fprintf(stdout, "PixelType      : %" PRIu32"\n",imageSubBlockHeader->PixelType);
+        fprintf(stdout, "FilePosition   : %lu\n",imageSubBlockHeader->FilePosition);
+        fprintf(stdout, "FilePart       : %" PRIu32"\n",imageSubBlockHeader->FilePart);
+        fprintf(stdout, "Compression    : %" PRIu32"\n",imageSubBlockHeader->Compression);
+        fprintf(stdout, "DimensionCount : %" PRIu32"\n",imageSubBlockHeader->DimensionCount);
 
         if (verbose > 2) {
           for (int i = 0; i < imageSubBlockHeader->DimensionCount; i++){
@@ -637,12 +606,12 @@ int main(int argc, const char* argv[] ){
       }
 
       // Add entry for this slice to nhdr file
-      fprintf(nhdrFile, "%ld %s\n", dataBegin, cziFileName);
+      fprintf(nhdrFile, "%ld %s\n", dataBegin, cziFileName.c_str());
 
       // go to the beginning of data
       lseek(cziFile, dataBegin, SEEK_SET);
 
-      if (strlen(projBaseFileName)) {
+      if (projBaseFileName.length()) {
         // read the current slice into *current_raw
         read(cziFile, current_raw, dims->sizeX * dims->sizeY * dims->pixelSize);
 
@@ -667,7 +636,7 @@ int main(int argc, const char* argv[] ){
           memcpy(current_f, current_raw, dims->sizeX * dims->sizeY * sizeof(float));
         }
         else {
-          fprintf(stderr, "%s: Can't deal with given pixelType\n", me);
+          fprintf(stderr, "skim_main: Can't deal with given pixelType\n");
           airMopError(mop);
           exit(1);
         }
@@ -699,11 +668,11 @@ int main(int argc, const char* argv[] ){
     fprintf(stdout, "\n");
   }
 
-  if (strlen(projBaseFileName)) {
+  if (projBaseFileName.length()) {
     //=======================//
     // Write out Projections //
     //=======================//
-    char *projFName = AIR_CALLOC(strlen(projBaseFileName)
+    char *projFName = AIR_CALLOC(projBaseFileName.length()
                                  + strlen("-projAA.nrrd") + 0, char);
     assert(projFName);
     airMopAdd(mop, projFName, airFree, airMopAlways);
@@ -716,16 +685,16 @@ int main(int argc, const char* argv[] ){
        and then we'd have a slightly cleaner way of getting/setting
        the per-axis meta data */
     int E = 0;
-    if (!E) sprintf(projFName, "%s-projXY.nrrd", projBaseFileName);
+    if (!E) sprintf(projFName, "%s-projXY.nrrd", projBaseFileName.c_str());
     if (!E) E |= nrrdSave(projFName, nproj_xy, NULL);
-    if (!E) sprintf(projFName, "%s-projXZ.nrrd", projBaseFileName);
+    if (!E) sprintf(projFName, "%s-projXZ.nrrd", projBaseFileName.c_str());
     if (!E) E |= nrrdSave(projFName, nproj_xz, NULL);
-    if (!E) sprintf(projFName, "%s-projYZ.nrrd", projBaseFileName);
+    if (!E) sprintf(projFName, "%s-projYZ.nrrd", projBaseFileName.c_str());
     if (!E) E |= nrrdSave(projFName, nproj_yz, NULL);
     if (E) {
       char *err = biffGetDone(NRRD);
       airMopAdd(mop, err, airFree, airMopAlways);
-      fprintf(stderr, "%s: couldn't save projectionss:\n%s", me, err);
+      fprintf(stderr, "skim_main: couldn't save projectionss:\n%s", err);
       airMopError(mop);
       return 1;
     }

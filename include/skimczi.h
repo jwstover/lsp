@@ -3,6 +3,7 @@
 //
 
 #include <tiff.h>
+#include <CLI11.hpp>
 
 #ifndef LSP_SKIMCZI_H
 #define LSP_SKIMCZI_H
@@ -179,4 +180,15 @@ typedef enum {
     CZICOMPRESSTYPE_JPEGXRFILE = 3   //--- Jpeg-XR aka HDP-file
 } CziCompmressionType;
 
+struct SkimOptions {
+    std::string file;
+    std::string no;
+    std::string xo;
+    std::string po;
+    int verbose = 0;
+};
 
+void setup_skim(CLI::App &app);
+int skim_main(SkimOptions const &opt);
+
+#endif

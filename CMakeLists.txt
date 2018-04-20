@@ -6,7 +6,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 
 set(CMAKE_CXX_STANDARD 11)
 
-file(GLOB SOURCES "src/*.cpp" "include/*.h")
+file(GLOB SOURCES "src/*.cpp" "include/*.h" "include/*.hpp")
 
 add_executable(lsp ${SOURCES})
 

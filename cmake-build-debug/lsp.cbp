@@ -90,6 +90,9 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="/Users/jwstover/Documents/UChicago/Spring/research/lsp/include/CLI11.hpp">
+			<Option target="lsp"/>
+		</Unit>
 		<Unit filename="/Users/jwstover/Documents/UChicago/Spring/research/lsp/include/skimczi.h">
 			<Option target="lsp"/>
 		</Unit>
