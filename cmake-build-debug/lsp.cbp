@@ -109,10 +109,10 @@
 		<Unit filename="/Users/jwstover/Documents/UChicago/Spring/research/lsp/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>
-		<Unit filename="/Users/jwstover/Documents/UChicago/Spring/research/lsp/../../../../../../../usr/local/teem-build/TeemLibraryDepends.cmake">
+		<Unit filename="/Users/jwstover/Documents/UChicago/Spring/research/lsp/../../../../../../../usr/local/teem-build/TeemConfig.cmake">
 			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\usr\local\teem-build\"/>
 		</Unit>
-		<Unit filename="/Users/jwstover/Documents/UChicago/Spring/research/lsp/../../../../../../../usr/local/teem-build/teemConfig.cmake">
+		<Unit filename="/Users/jwstover/Documents/UChicago/Spring/research/lsp/../../../../../../../usr/local/teem-build/TeemLibraryDepends.cmake">
 			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\usr\local\teem-build\"/>
 		</Unit>
 	</Project>

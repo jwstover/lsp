@@ -10,9 +10,11 @@ file(GLOB SOURCES "src/*.cpp" "include/*.h" "include/*.hpp")
 
 add_executable(lsp ${SOURCES})
 
-find_package(teem)
+find_package(Teem)
+include_directories(${TEEM_INCLUDE_DIRS})
+
 
 find_package(LibXml2)
 include_directories(${LIBXML2_INCLUDE_DIR})
 
-target_link_libraries(lsp teem ${LIBXML2_LIBRARIES})
+target_link_libraries(lsp ${TEEM_LIBRARIES} ${LIBXML2_LIBRARIES})
