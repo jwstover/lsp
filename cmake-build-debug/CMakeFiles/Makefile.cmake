@@ -24,7 +24,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/Applications/CLion.app/Contents/bin/cmake/share/cmake-3.10/Modules/FindPackageHandleStandardArgs.cmake"
   "/Applications/CLion.app/Contents/bin/cmake/share/cmake-3.10/Modules/FindPackageMessage.cmake"
   "/Applications/CLion.app/Contents/bin/cmake/share/cmake-3.10/Modules/FindPkgConfig.cmake"
-  "/Applications/CLion.app/Contents/bin/cmake/share/cmake-3.10/Modules/Findlibxml2.cmake"
+  "/Applications/CLion.app/Contents/bin/cmake/share/cmake-3.10/Modules/FindlibXml2.cmake"
   "/Applications/CLion.app/Contents/bin/cmake/share/cmake-3.10/Modules/Platform/Darwin-AppleClang-C.cmake"
   "/Applications/CLion.app/Contents/bin/cmake/share/cmake-3.10/Modules/Platform/Darwin-AppleClang-CXX.cmake"
   "/Applications/CLion.app/Contents/bin/cmake/share/cmake-3.10/Modules/Platform/Darwin-Clang-C.cmake"

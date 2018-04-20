@@ -12,7 +12,7 @@ add_executable(lsp ${SOURCES})
 
 find_package(teem)
 
-find_package(libxml2)
+find_package(libXml2)
 include_directories(${LIBXML2_INCLUDE_DIR})
 
 target_link_libraries(lsp teem ${LIBXML2_LIBRARIES})
