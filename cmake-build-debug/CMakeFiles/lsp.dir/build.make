@@ -142,7 +142,6 @@ lsp: CMakeFiles/lsp.dir/src/main.cpp.o
 lsp: CMakeFiles/lsp.dir/src/skimczi.cpp.o
 lsp: CMakeFiles/lsp.dir/src/util.cpp.o
 lsp: CMakeFiles/lsp.dir/build.make
-lsp: /usr/local/boost_1_65_1/stage/lib/libboost_program_options.dylib
 lsp: /usr/local/teem-build/bin/libteem.a
 lsp: /usr/lib/libxml2.dylib
 lsp: /usr/lib/libbz2.dylib

@@ -15,7 +15,6 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../include"
   "../src"
   "/usr/include/libxml2"
-  "/usr/local/boost_1_65_1"
   )
 
 # Targets to which this target links.

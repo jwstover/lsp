@@ -6,5 +6,5 @@ CXX_FLAGS = -g   -std=gnu++11
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/Users/jwstover/Documents/UChicago/Spring/research/lsp/include -I/Users/jwstover/Documents/UChicago/Spring/research/lsp/src -I/usr/include/libxml2 -I/usr/local/boost_1_65_1 
+CXX_INCLUDES = -I/Users/jwstover/Documents/UChicago/Spring/research/lsp/include -I/Users/jwstover/Documents/UChicago/Spring/research/lsp/src -I/usr/include/libxml2 
 
