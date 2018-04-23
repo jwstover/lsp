@@ -142,7 +142,13 @@ lsp: CMakeFiles/lsp.dir/src/main.cpp.o
 lsp: CMakeFiles/lsp.dir/src/skimczi.cpp.o
 lsp: CMakeFiles/lsp.dir/src/util.cpp.o
 lsp: CMakeFiles/lsp.dir/build.make
+lsp: /usr/local/teem-build/bin/libteem.a
 lsp: /usr/lib/libxml2.dylib
+lsp: /usr/lib/libbz2.dylib
+lsp: /usr/lib/libz.dylib
+lsp: /usr/local/lib/libpng.dylib
+lsp: /usr/lib/libz.dylib
+lsp: /usr/local/lib/libpng.dylib
 lsp: CMakeFiles/lsp.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/jwstover/Documents/UChicago/Spring/research/lsp/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable lsp"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/lsp.dir/link.txt --verbose=$(VERBOSE)

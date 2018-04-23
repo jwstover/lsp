@@ -14,6 +14,7 @@ set(CMAKE_CXX_COMPILER_ID "AppleClang")
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../include"
   "../src"
+  "/usr/local/teem-build/include"
   "/usr/include/libxml2"
   )
 

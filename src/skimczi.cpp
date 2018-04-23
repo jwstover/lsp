@@ -16,7 +16,13 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
-#include <teem/meet.h>
+#include <teem/air.h>
+#include <teem/biff.h>
+#include <teem/ell.h>
+#include <teem/nrrd.h>
+#include <teem/limn.h>
+
+
 #include <CLI11.hpp>
 
 #include "skimczi.h"

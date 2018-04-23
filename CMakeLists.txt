@@ -5,16 +5,17 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-file(GLOB SOURCES "src/*.cpp" "include/*.h" "include/*.hpp")
+file(GLOB SOURCES "include/*.h" "include/*.hpp" "src/*.cpp")
 
 add_executable(lsp ${SOURCES})
 
 find_package(Teem)
-include_directories(${TEEM_INCLUDE_DIRS})
-
+include_directories(${Teem_INCLUDE_DIRS})
 
 find_package(LibXml2)
 include_directories(${LIBXML2_INCLUDE_DIR})
 
-target_link_libraries(lsp ${TEEM_LIBRARIES} ${LIBXML2_LIBRARIES})
+target_link_libraries(lsp ${Teem_LIBRARIES} ${LIBXML2_LIBRARIES})
