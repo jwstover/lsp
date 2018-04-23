@@ -3,7 +3,9 @@
 //
 
 #include <tiff.h>
-#include <CLI11.hpp>
+#include <cstdint>
+#include <string>
+#include "CLI11.hpp"
 
 #ifndef LSP_SKIMCZI_H
 #define LSP_SKIMCZI_H
@@ -15,8 +17,8 @@
 #pragma pack(push,1)
 typedef struct{
     char id[16];
-    uint64 allocatedSize;
-    uint64 usedSize;
+    uint64_t allocatedSize;
+    uint64_t usedSize;
 } SID;
 #pragma pack(pop)
 
@@ -25,17 +27,17 @@ typedef struct{
 // ================ //
 #pragma pack(push,1)
 typedef struct {
-    uint32 Major;                       // "1"
-    uint32 Minor;                       // "0"
-    uint32 Reserved1;
-    uint32 Reserved2;
+    uint32_t Major;                       // "1"
+    uint32_t Minor;                       // "0"
+    uint32_t Reserved1;
+    uint32_t Reserved2;
     char PrimaryFileGuid[16];             // Unique Guid of Master file (FilePart 0)
     char FileGuid[16];                    // Unique Per file
-    uint32 FilePart;                    // Part number in multi-file scenarios
-    uint64 DirectoryPosition;           // File position of the SubBlockDirectory Segment
-    uint64 MetadataPosition;            // File position of the Metadata Segment.
-    uint32 UpdatePending;               // Bool (0xffff, 0);
-    uint64 AttachmentDirectoryPosition; // File position of the AttachmentDirectory Segment.
+    uint32_t FilePart;                    // Part number in multi-file scenarios
+    uint64_t DirectoryPosition;           // File position of the SubBlockDirectory Segment
+    uint64_t MetadataPosition;            // File position of the Metadata Segment.
+    uint32_t UpdatePending;               // Bool (0xffff, 0);
+    uint64_t AttachmentDirectoryPosition; // File position of the AttachmentDirectory Segment.
     char Padding[432];                    // 432 = 512 - 80
 } CziHeaderInfo;
 #pragma pack(pop)
@@ -47,8 +49,8 @@ typedef struct {
 #pragma pack(push, 1)
 typedef struct
 {
-    uint32 XmlSize;
-    uint32 AttachmentSize;
+    uint32_t XmlSize;
+    uint32_t AttachmentSize;
     char Spare[248];
 } CziMetadataSegmentHeaderPart;
 #pragma pack(pop)
@@ -61,10 +63,10 @@ typedef struct
 #pragma pack(push,1)
 typedef struct  {
     unsigned char Dimension[4];
-    int32 Start;
-    int32 Size;
+    int32_t Start;
+    int32_t Size;
     float StartCoordinate;
-    int32 StoredSize;
+    int32_t StoredSize;
 } CziDimensionEntryDV1;
 #pragma pack(pop)
 
@@ -72,14 +74,14 @@ typedef struct  {
 #pragma pack(push,1)
 typedef struct {
     unsigned char SchemaType[2]; // "DV"
-    int32 PixelType;
-    int64 FilePosition;
-    int32 FilePart;
-    int32 Compression;
+    int32_t PixelType;
+    int64_t FilePosition;
+    int32_t FilePart;
+    int32_t Compression;
     unsigned char PyramidType;
     unsigned char spare1;
     unsigned char spare2[4];
-    int32 DimensionCount;
+    int32_t DimensionCount;
     CziDimensionEntryDV1 DimensionEntries[12]; // As far as I can tell, there are only 12 posible axes
 } CziDirectoryEntryDV;
 #pragma pack(pop)
@@ -88,50 +90,50 @@ typedef struct {
 #pragma pack(push,1)
 typedef struct {
     unsigned char SchemaType[2]; // "DV"
-    int32 PixelType;
-    int64 FilePosition;
-    int32 FilePart;
-    int32 Compression;
+    int32_t PixelType;
+    int64_t FilePosition;
+    int32_t FilePart;
+    int32_t Compression;
     unsigned char PyramidType;
     unsigned char spare1;
     unsigned char spare2[4];
-    int32 DimensionCount;
+    int32_t DimensionCount;
 } CziDirectoryEntryDV_HeaderOnly;
 #pragma pack(pop)
 
 
 #pragma pack(push,1)
 typedef struct {
-    uint32 MetadataSize;        // 4
-    uint32 AttachmentSize;      // 4
-    uint64 DataSize;            // 8
+    uint32_t MetadataSize;        // 4
+    uint32_t AttachmentSize;      // 4
+    uint64_t DataSize;            // 8
     unsigned char SchemaType[2];  // 2
-    uint32 PixelType;           // 4
-    uint64 FilePosition;        // 8
-    uint32 FilePart;            // 4
-    uint32 Compression;         // 4
+    uint32_t PixelType;           // 4
+    uint64_t FilePosition;        // 8
+    uint32_t FilePart;            // 4
+    uint32_t Compression;         // 4
     unsigned char PyramidType;    // 1
     unsigned char spare1;         // 1
     unsigned char spare2[4];      // 4
-    uint32 DimensionCount;      // 4
+    uint32_t DimensionCount;      // 4
 } CziSubBlockSegment_HeaderOnly;
 #pragma pack(pop)
 
 
 #pragma pack(push,1)
 typedef struct {
-    uint32 MetadataSize;        // 4
-    uint32 AttachmentSize;      // 4
-    uint64 DataSize;            // 8
+    uint32_t MetadataSize;        // 4
+    uint32_t AttachmentSize;      // 4
+    uint64_t DataSize;            // 8
     unsigned char SchemaType[2];  // 2
-    uint32 PixelType;           // 4
-    uint64 FilePosition;        // 8
-    uint32 FilePart;            // 4
-    uint32 Compression;         // 4
+    uint32_t PixelType;           // 4
+    uint64_t FilePosition;        // 8
+    uint32_t FilePart;            // 4
+    uint32_t Compression;         // 4
     unsigned char PyramidType;    // 1
     unsigned char spare1;         // 1
     unsigned char spare2[4];      // 4
-    uint32 DimensionCount;      // 4
+    uint32_t DimensionCount;      // 4
     CziDimensionEntryDV1 DimensionEntries[12];  // As far as I can tell, there are only 12 posible axes
 } CziSubBlockSegment;
 #pragma pack(pop)

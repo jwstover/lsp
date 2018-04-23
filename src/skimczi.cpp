@@ -22,7 +22,6 @@
 #include <teem/nrrd.h>
 #include <teem/limn.h>
 
-
 #include <CLI11.hpp>
 
 #include "skimczi.h"
