@@ -312,7 +312,7 @@ int skim_main(SkimOptions const &opt){
         fprintf(stdout, "Major      : %" PRIu32"\n", headerInfo->Major);
         fprintf(stdout, "Minor      : %" PRIu32"\n", headerInfo->Minor);
         fprintf(stdout, "FilePart   : %" PRIu32"\n", headerInfo->FilePart);
-        fprintf(stdout, "MetaDataPos: %lu\n", headerInfo->MetadataPosition);
+        fprintf(stdout, "MetaDataPos: %llu\n", headerInfo->MetadataPosition);
         fprintf(stdout, "UpdatePend : %" PRIu32"\n", headerInfo->UpdatePending);
         fprintf(stdout, "==========================\n\n");
       }
@@ -581,14 +581,14 @@ int skim_main(SkimOptions const &opt){
         fprintf(stdout, "======ZISRAWSUBBLOCK======\n");
         fprintf(stdout, "ID       : %s\n", currentSID->id);
         fprintf(stdout, "POS      : %lld\n", lseek(cziFile, 0, SEEK_CUR)-32);
-        fprintf(stdout, "allocSize: %lu\n", currentSID->allocatedSize);
-        fprintf(stdout, "usedSize : %lu\n", currentSID->usedSize);
+        fprintf(stdout, "allocSize: %llu\n", currentSID->allocatedSize);
+        fprintf(stdout, "usedSize : %llu\n", currentSID->usedSize);
         fprintf(stdout, "--------CONTENTS----------\n");
         fprintf(stdout, "MetadataSize   : %" PRIu32"\n",imageSubBlockHeader->MetadataSize);
         fprintf(stdout, "AttachmentSize : %" PRIu32"\n",imageSubBlockHeader->AttachmentSize);
-        fprintf(stdout, "DataSize       : %lu\n",imageSubBlockHeader->DataSize);
+        fprintf(stdout, "DataSize       : %llu\n",imageSubBlockHeader->DataSize);
         fprintf(stdout, "PixelType      : %" PRIu32"\n",imageSubBlockHeader->PixelType);
-        fprintf(stdout, "FilePosition   : %lu\n",imageSubBlockHeader->FilePosition);
+        fprintf(stdout, "FilePosition   : %llu\n",imageSubBlockHeader->FilePosition);
         fprintf(stdout, "FilePart       : %" PRIu32"\n",imageSubBlockHeader->FilePart);
         fprintf(stdout, "Compression    : %" PRIu32"\n",imageSubBlockHeader->Compression);
         fprintf(stdout, "DimensionCount : %" PRIu32"\n",imageSubBlockHeader->DimensionCount);
