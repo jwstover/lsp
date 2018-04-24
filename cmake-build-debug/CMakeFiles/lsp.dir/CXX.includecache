@@ -6,58 +6,6 @@
 
 #IncludeRegexTransform: 
 
-../include/CLI11.hpp
-algorithm
--
-deque
--
-exception
--
-fstream
--
-functional
--
-iomanip
--
-iostream
--
-istream
--
-iterator
--
-locale
--
-memory
--
-numeric
--
-set
--
-sstream
--
-stdexcept
--
-string
--
-sys/stat.h
--
-sys/types.h
--
-tuple
--
-type_traits
--
-utility
--
-vector
--
-optional
--
-experimental/optional
--
-boost/optional.hpp
--
-
 ../include/skimczi.h
 tiff.h
 -
@@ -66,7 +14,7 @@ cstdint
 string
 -
 CLI11.hpp
-../include/CLI11.hpp
+-
 
 ../include/util.h
 
@@ -114,8 +62,6 @@ teem/ell.h
 teem/nrrd.h
 -
 teem/limn.h
--
-CLI11.hpp
 -
 skimczi.h
 /Users/jwstover/Documents/UChicago/Spring/research/lsp/src/skimczi.h

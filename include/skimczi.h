@@ -7,7 +7,7 @@
 #include <tiff.h>
 #include <cstdint>
 #include <string>
-#include "CLI11.hpp"
+#include <CLI11.hpp>
 
 // ================= //
 // SEGMENT ID HEADER //
