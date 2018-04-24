@@ -1,13 +1,15 @@
 //
 // Created by Jake Stover on 4/16/18.
 //
-#ifndef LSP_SKIMCZI_H
-#define LSP_SKIMCZI_H
 
 #include <tiff.h>
 #include <cstdint>
 #include <string>
 #include <CLI11.hpp>
+
+#ifndef LSP_SKIMCZI_H
+#define LSP_SKIMCZI_H
+
 
 // ================= //
 // SEGMENT ID HEADER //
