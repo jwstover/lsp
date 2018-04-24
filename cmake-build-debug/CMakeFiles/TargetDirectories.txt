@@ -1,3 +1,0 @@
-/Users/jwstover/Documents/UChicago/Spring/research/lsp/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/Users/jwstover/Documents/UChicago/Spring/research/lsp/cmake-build-debug/CMakeFiles/edit_cache.dir
-/Users/jwstover/Documents/UChicago/Spring/research/lsp/cmake-build-debug/CMakeFiles/lsp.dir
