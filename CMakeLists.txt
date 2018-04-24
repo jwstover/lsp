@@ -18,9 +18,4 @@ target_include_directories(lsp PRIVATE ${Teem_INCLUDE_DIRS})
 find_package(LibXml2)
 target_include_directories(lsp PRIVATE ${LIBXML2_INCLUDE_DIR})
 
-set(CLI11_DIR /usr/local/lib/cmake/CLI11/)
-
-find_package(CLI11)
-
-
 target_link_libraries(lsp ${Teem_LIBRARIES} ${LIBXML2_LIBRARIES})
