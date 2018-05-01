@@ -6,10 +6,9 @@
 #define LSP_UTIL_H
 
 #include <teem/nrrd.h>
-#include <unitypes.h>
 #include <string>
 
-std::string zero_pad(int num, uint len);
+std::string zero_pad(int num, unsigned int len);
 
 Nrrd* safe_load_nrrd(std::string filename);
 
