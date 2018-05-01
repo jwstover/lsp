@@ -1,5 +1,5 @@
 //
-// Created by Jake Stover on 4/16/18.
+// Created by Robin Weiss
 //
 
 #include <cstdio>
@@ -25,6 +25,7 @@
 #include <CLI11.hpp>
 
 #include "skimczi.h"
+#include "util.h"
 
 typedef struct{
     int sizeX;
@@ -703,6 +704,21 @@ int skim_main(SkimOptions const &opt){
       airMopError(mop);
       return 1;
     }
+  }
+
+  Nrrd *nin = safe_load_nrrd(nhdrFileName);
+  airMopAdd(mop, nin, airFree, airMopAlways);
+
+  if (nin) {
+    Nrrd *line = nrrdNew();
+    airMopAdd(mop, line, airFree, airMopAlways);
+
+    nrrdAxesMerge(nin, nin, 0);
+    nrrdProject(line, nin, 0, nrrdMeasureMean, nrrdTypeDefault);
+    nrrdAxesMerge(line, line, 0);
+
+    std::string lineFile = projBaseFileName + "-line.nrrd";
+    nrrdSave(lineFile.c_str(), line, NULL);
   }
 
   if (verbose) {

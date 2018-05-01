@@ -1,5 +1,5 @@
 //
-// Created by Jake Stover on 4/16/18.
+// Created by Robin Wiess
 //
 
 #include <tiff.h>
