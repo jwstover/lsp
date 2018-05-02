@@ -706,6 +706,10 @@ int skim_main(SkimOptions const &opt){
     }
   }
 
+  fclose(nhdrFile);
+  close(cziFile);
+  close(xmlFile);
+
   Nrrd *nin = safe_load_nrrd(nhdrFileName);
   airMopAdd(mop, nin, airFree, airMopAlways);
 
@@ -724,10 +728,6 @@ int skim_main(SkimOptions const &opt){
   if (verbose) {
     fprintf(stdout, "DONE!\n");
   }
-
-  close(cziFile);
-  fclose(nhdrFile);
-  close(xmlFile);
 
   airMopOkay(mop);
   return 0;
