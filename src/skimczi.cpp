@@ -715,14 +715,22 @@ int skim_main(SkimOptions const &opt){
 
   if (nin) {
     Nrrd *line = nrrdNew();
+    Nrrd *fline = nrrdNew();
+
     airMopAdd(mop, line, airFree, airMopAlways);
-
-    nrrdAxesMerge(nin, nin, 0);
-    nrrdProject(line, nin, 0, nrrdMeasureMean, nrrdTypeDefault);
-    nrrdAxesMerge(line, line, 0);
-
+    airMopAdd(mop, fline, airFree, airMopAlways);
     std::string lineFile = projBaseFileName + "-line.nrrd";
-    nrrdSave(lineFile.c_str(), line, NULL);
+
+    if (nrrdAxesMerge(nin, nin, 0)
+      || nrrdProject(line, nin, 0, nrrdMeasureMean, nrrdTypeDefault)
+      || nrrdAxesMerge(line, line, 0)
+      || nrrdConvert(fline, line, nrrdTypeFloat)
+      || nrrdSave(lineFile.c_str(), fline, NULL)) {
+      char *err = biffGetDone(NRRD);
+      airMopAdd(mop, err, airFree, airMopAlways);
+      fprintf(stderr, "ERROR making line: %s\n", err);
+      exit(1); // TODO proper exception handling
+    }
   }
 
   if (verbose) {
