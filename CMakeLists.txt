@@ -18,4 +18,10 @@ target_include_directories(lsp PRIVATE ${Teem_INCLUDE_DIRS})
 find_package(LibXml2)
 target_include_directories(lsp PRIVATE ${LIBXML2_INCLUDE_DIR})
 
+find_package(Boost COMPONENTS system filesystem REQUIRED)
+if (${Boost_FOUND})
+    include_directories(lsp PRIVATE ${Boost_INCLUDE_DIRS})
+    target_link_libraries(lsp ${Boost_LIBRARIES})
+endif()
+
 target_link_libraries(lsp ${Teem_LIBRARIES} ${LIBXML2_LIBRARIES})

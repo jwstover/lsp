@@ -10,133 +10,18 @@
 #include <cstring>
 #include <unistd.h>
 #include <fcntl.h>
-#include <cassert>
-#include <climits>
 #include <cerrno>
 #include <libxml/parser.h>
-#include <libxml/tree.h>
 
 #include <teem/air.h>
 #include <teem/biff.h>
 #include <teem/ell.h>
-#include <teem/nrrd.h>
-#include <teem/limn.h>
 
 #include <CLI11.hpp>
 
 #include "skimczi.h"
 #include "util.h"
-
-typedef struct{
-    int sizeX;
-    int sizeY;
-    int sizeZ;
-    int sizeC;
-    int sizeT;
-    double scalingX;
-    double scalingY;
-    double scalingZ;
-    CziPixelType pixelType;
-    size_t pixelSize;
-} ImageDims;
-
-
-
-// Convert the string parameter to a CZI pixel type.
-// TODO: probably want to refactor this stuff into something like skimczi_util.c or some such nonsense
-CziPixelType ConvertStringToPixelType(const char *wszValue) {
-
-  CziPixelType pixeltype = CZIPIXELTYPE_UNDEFINED;
-  if(wszValue) {
-    if(!strcmp("Gray8", wszValue))
-      pixeltype = CZIPIXELTYPE_GRAY8;
-    else if(!strcmp("Gray16", wszValue))
-      pixeltype = CZIPIXELTYPE_GRAY16;
-    else if(!strcmp("Gray32Float", wszValue))
-      pixeltype = CZIPIXELTYPE_GRAY32FLOAT;
-    else if(!strcmp("Bgr24", wszValue))
-      pixeltype = CZIPIXELTYPE_BGR24;
-    else if(!strcmp("Bgr48", wszValue))
-      pixeltype = CZIPIXELTYPE_BGR48;
-    else if(!strcmp("Bgr96Float", wszValue))
-      pixeltype = CZIPIXELTYPE_BGR96FLOAT;
-    else if(!strcmp("Bgra32", wszValue))
-      pixeltype = CZIPIXELTYPE_BGRA32;
-    else if(!strcmp("Gray64ComplexFloat", wszValue))
-      pixeltype = CZIPIXELTYPE_GRAY64COMPEXFLOAT;
-    else if(!strcmp("Bgr192ComplexFloat", wszValue))
-      pixeltype = CZIPIXELTYPE_BGR192COMPEXFLOAT;
-  }
-  return pixeltype;
-}
-
-
-// TODO: probably want to refactor this stuff into something like skimczi_util.c or some such nonsense
-void get_image_dims(xmlNode * a_node, ImageDims * dims) {
-  xmlNode *cur_node = NULL;
-  xmlChar *key;
-
-  for (cur_node = a_node; cur_node; cur_node = cur_node->next) {
-    if (cur_node->type == XML_ELEMENT_NODE) {
-      if (!xmlStrcmp(cur_node->name, (const xmlChar *)"SizeX")){
-        key = xmlNodeGetContent(cur_node);
-        dims->sizeX = atoi((const char *)key);
-        xmlFree(key);
-      }
-      if (!xmlStrcmp(cur_node->name, (const xmlChar *)"SizeY")){
-        key = xmlNodeGetContent(cur_node);
-        dims->sizeY = atoi((const char *)key);
-        xmlFree(key);
-      }
-      if (!xmlStrcmp(cur_node->name, (const xmlChar *)"SizeZ")){
-        key = xmlNodeGetContent(cur_node);
-        dims->sizeZ = atoi((const char *)key);
-        xmlFree(key);
-      }
-      if (!xmlStrcmp(cur_node->name, (const xmlChar *)"SizeC")){
-        key = xmlNodeGetContent(cur_node);
-        dims->sizeC = atoi((const char *)key);
-        xmlFree(key);
-      }
-      if (!xmlStrcmp(cur_node->name, (const xmlChar *)"SizeT")){
-        key = xmlNodeGetContent(cur_node);
-        dims->sizeT = atoi((const char *)key);
-        xmlFree(key);
-      }
-      if (!xmlStrcmp(cur_node->name, (const xmlChar *)"ScalingX")){
-        key = xmlNodeGetContent(cur_node);
-        dims->scalingX = atof((const char *)key);
-        xmlFree(key);
-      }
-      if (!xmlStrcmp(cur_node->name, (const xmlChar *)"ScalingY")){
-        key = xmlNodeGetContent(cur_node);
-        dims->scalingY = atof((const char *)key);
-        xmlFree(key);
-      }
-      if (!xmlStrcmp(cur_node->name, (const xmlChar *)"ScalingZ")){
-        key = xmlNodeGetContent(cur_node);
-        dims->scalingZ = atof((const char *)key);
-        xmlFree(key);
-      }
-      if (!xmlStrcmp(cur_node->name, (const xmlChar *)"PixelType")){
-        key = xmlNodeGetContent(cur_node);
-        dims->pixelType = ConvertStringToPixelType((const char *)key);
-        if (dims->pixelType == CZIPIXELTYPE_GRAY8){
-          dims->pixelSize = sizeof(char);
-        }
-        else if (dims->pixelType == CZIPIXELTYPE_GRAY16){
-          dims->pixelSize = sizeof(short);
-        }
-        else if (dims->pixelType == CZIPIXELTYPE_GRAY32FLOAT){
-          dims->pixelSize = sizeof(float);
-        }
-        xmlFree(key);
-      }
-    }
-    get_image_dims(cur_node->children, dims);
-  }
-}
-
+#include "skimczi_util.h"
 
 static void
 update_projections(ImageDims *dims,     // Image metadata
@@ -227,7 +112,13 @@ void setup_skim(CLI::App &app) {
   sub->add_option("-x, --xml", opt->xo, "Filename for output XML metadata. (Default: .czi file name)");
   sub->add_option("-p, --proj", opt->po, "Given a non-empty string \"foo\" axis-aligned projections saved out as foo-projXY.nrrd, foo-projXZ.nrrd, and foo-projYZ.nrrd. ");
 
-  sub->set_callback([opt]() { skim_main(*opt); });
+  sub->set_callback([opt]() {
+    try {
+      skim_main(*opt);
+    } catch(LSPException &e) {
+      std::cerr << "Exception thrown by " << e.get_func() << "() in " << e.get_file() << ": " << e.what() << std::endl;
+    }
+  });
 }
 
 int skim_main(SkimOptions const &opt){
@@ -243,9 +134,11 @@ int skim_main(SkimOptions const &opt){
 
   u_long suff = cziFileName.rfind(".czi");
   if (!suff || (suff != cziFileName.length() - 4)) {
-    std::cerr << "skim_main: sorry, confused by input " << cziFileName << " not ending with .czi\n";
+    std::string msg = "Input file " + cziFileName + " does not end with .czi\n";
+
     airMopError(mop);
-    exit(1);
+
+    throw LSPException(msg, "skimczi.cpp", "skim_main");
   }
 
   std::string baseName = cziFileName.substr(0,suff);
@@ -282,9 +175,11 @@ int skim_main(SkimOptions const &opt){
   // Open the files
   int cziFile  = open(cziFileName.c_str(), O_RDONLY);
   if (errno){
-    std::cerr << "skim_main: Error opening " << cziFileName << " : " << strerror(errno) << ".\n";
+    std::string msg = "Error opening " + cziFileName + " : " + strerror(errno) + ".\n";
+
     airMopError(mop);
-    exit(1);
+
+    throw LSPException(msg, "skimczi.cpp", "skim_main");
   }
   FILE * nhdrFile = fopen(nhdrFileName.c_str(), "w");
   int xmlFile  = open(xmlFileName.c_str(), O_TRUNC | O_CREAT | O_WRONLY, 0666);
@@ -336,9 +231,11 @@ int skim_main(SkimOptions const &opt){
   // Read the metadata SID
   read(cziFile, currentSID, 32);
   if (strcmp(currentSID->id, "ZISRAWMETADATA") != 0){
-    fprintf(stderr, "skim_main: Metadata not where we expected it.\n");
+    std::string msg = "Metadata not where we expected it.\n";
+
     airMopError(mop);
-    exit(1);
+
+    throw LSPException(msg, "skimczi.cpp", "skim_main");
   }
 
   // Metadata for the metadata
@@ -364,9 +261,11 @@ int skim_main(SkimOptions const &opt){
   xmlDoc *doc = NULL;
   doc = xmlReadMemory(xml, metaDataSegment->XmlSize, "noname.xml", NULL, 0);
   if (doc == NULL) {
-    fprintf(stderr, "error: could not parse XML\n");
+    std::string msg = "Could not parse XML\n";
+
     airMopError(mop);
-    exit(1);
+
+    throw LSPException(msg, "skimczi.cpp", "skim_main");
   }
 
   // Get the root element node
@@ -394,9 +293,11 @@ int skim_main(SkimOptions const &opt){
   }
 
   if (dims->pixelType == CZIPIXELTYPE_UNDEFINED || dims->pixelType > CZIPIXELTYPE_GRAY32FLOAT){
-    fprintf(stderr, "error: XML indicates non-supported PixelType\n");
+    std::string msg = "XML indicates non-supported PixelType\n";
+
     airMopError(mop);
-    exit(1);
+
+    throw LSPException(msg, "skimczi.cpp", "skim_main");
   }
 
   // Clean up XML parser
@@ -503,10 +404,13 @@ int skim_main(SkimOptions const &opt){
         || nrrdAlloc_va(nproj_yz, nrrdTypeFloat, 4,
                         sizeY, sizeZ, sizeC, sizeP)) {
       char *err = biffGetDone(NRRD);
+      char *msg;
+      sprintf(msg, "Couldn't allocate projection buffers:\n%s", err);
+
       airMopAdd(mop, err, airFree, airMopAlways);
-      fprintf(stderr, "skim_main: couldn't allocate projection buffers:\n%s", err);
       airMopError(mop);
-      return 1;
+
+      throw LSPException(msg, "skimczi.cpp", "skim_main");
     }
     nrrdAxisInfoSet_va(nproj_xy, nrrdAxisInfoLabel, "x", "y", "c", "proj");
     nrrdAxisInfoSet_va(nproj_xz, nrrdAxisInfoLabel, "x", "z", "c", "proj");
@@ -550,16 +454,20 @@ int skim_main(SkimOptions const &opt){
       // Make sure this image block has the expected PixelType
       // TODO: Also check image dimensions agree with XML?
       if (imageSubBlockHeader->PixelType != dims->pixelType){
-        fprintf(stderr, "error: ImageSubBlock PixelType field doesn't agree with XML\n");
+        std::string msg = "ImageSubBlock PixelType field doesn't agree with XML\n";
+
         airMopError(mop);
-        exit(1);
+
+        throw LSPException(msg, "skimczi.cpp", "skim_main");
       }
 
       // Make sure this image block has the expected compression
       if (imageSubBlockHeader->Compression != CZICOMPRESSTYPE_RAW){
-        fprintf(stderr, "error: ImageSubBlock indicated unsupported compression type\n");
+        std::string msg = "ImageSubBlock indicated unsupported compression type\n";
+
         airMopError(mop);
-        exit(1);
+
+        throw LSPException(msg, "skimczi.cpp", "skim_main");
       }
 
       // Channel this image slice is from
@@ -642,9 +550,11 @@ int skim_main(SkimOptions const &opt){
           memcpy(current_f, current_raw, dims->sizeX * dims->sizeY * sizeof(float));
         }
         else {
-          fprintf(stderr, "skim_main: Can't deal with given pixelType\n");
+          std::string msg = "Can't deal with given pixelType\n";
+
           airMopError(mop);
-          exit(1);
+
+          throw LSPException(msg, "skimczi.cpp", "skim_main");
         }
         // update the projections
         update_projections(dims, curr_c, curr_z, current_f,
@@ -699,10 +609,14 @@ int skim_main(SkimOptions const &opt){
     if (!E) E |= nrrdSave(projFName, nproj_yz, NULL);
     if (E) {
       char *err = biffGetDone(NRRD);
+      char *msg;
+
+      sprintf(msg, "Couldn't save projections:\n%s", err);
+
       airMopAdd(mop, err, airFree, airMopAlways);
-      fprintf(stderr, "skim_main: couldn't save projectionss:\n%s", err);
       airMopError(mop);
-      return 1;
+
+      throw LSPException(msg, "skimczi.cpp", "skim_main");
     }
   }
 
@@ -711,14 +625,14 @@ int skim_main(SkimOptions const &opt){
   close(xmlFile);
 
   Nrrd *nin = safe_load_nrrd(nhdrFileName);
-  airMopAdd(mop, nin, airFree, airMopAlways);
+  airMopAdd(mop, nin, (airMopper)nrrdNix, airMopAlways);
 
   if (nin) {
     Nrrd *line = nrrdNew();
     Nrrd *fline = nrrdNew();
 
-    airMopAdd(mop, line, airFree, airMopAlways);
-    airMopAdd(mop, fline, airFree, airMopAlways);
+    airMopAdd(mop, line, (airMopper)nrrdNix, airMopAlways);
+    airMopAdd(mop, fline, (airMopper)nrrdNix, airMopAlways);
     std::string lineFile = projBaseFileName + "-line.nrrd";
 
     if (nrrdAxesMerge(nin, nin, 0)
@@ -726,10 +640,15 @@ int skim_main(SkimOptions const &opt){
       || nrrdAxesMerge(line, line, 0)
       || nrrdConvert(fline, line, nrrdTypeFloat)
       || nrrdSave(lineFile.c_str(), fline, NULL)) {
+      char *msg;
       char *err = biffGetDone(NRRD);
+
+      sprintf(msg, "Error making line: %s", err);
+
       airMopAdd(mop, err, airFree, airMopAlways);
-      fprintf(stderr, "ERROR making line: %s\n", err);
-      exit(1); // TODO proper exception handling
+      airMopError(mop);
+
+      throw LSPException(msg, "skimczi.cpp", "skim_main");
     }
   }
 
