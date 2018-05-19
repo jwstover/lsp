@@ -29,8 +29,8 @@ void setup_corrnhdr(CLI::App &app) {
 void corrnhdr_main(corrnhdrOptions const &opt) {
   auto mop = airMopNew();
   const int num = opt.num;
-  const std::string dir = current_path().string() + "/reg/";
-  const std::string basename = "-corr1.txt";
+  std::string dir = current_path().string() + "/reg/";
+  std::string basename = "-corr1.txt";
 
   std::ostringstream ss;
 
@@ -58,6 +58,7 @@ void corrnhdr_main(corrnhdrOptions const &opt) {
       }
       shifts.push_back(tmp);
       offsets.push_back(tmp2);
+      inFile.close();
     } else {
       std::cout << "[corrnhdr] WARN: " << file.string() << " does not exist." << std::endl;
     }
@@ -87,6 +88,7 @@ void corrnhdr_main(corrnhdrOptions const &opt) {
   auto nsize = AIR_UINT(offset_n->axis[0].size);
   auto mnout = AIR_CALLOC(nsize, Nrrd*);
 
+  airMopAdd(mop, offset_median, (airMopper)nrrdNuke, airMopAlways);
   airMopAdd(mop, ntmp, (airMopper)nrrdNuke, airMopAlways);
   airMopAdd(mop, mnout, airFree, airMopAlways);
 
@@ -148,9 +150,9 @@ void corrnhdr_main(corrnhdrOptions const &opt) {
     throw LSPException(msg, "corrnhdr.cpp", "corrnhdr_main");
   }
 
-  airMopSingleOkay(mop, offset_n);
-
   Nrrd *offset_smooth = nrrdNew();
+  airMopAdd(mop, offset_smooth, (airMopper)nrrdNuke, airMopAlways);
+
   auto rsmc = nrrdResampleContextNew();
   airMopAdd(mop, rsmc, (airMopper)nrrdResampleContextNix, airMopAlways);
 
@@ -176,17 +178,36 @@ void corrnhdr_main(corrnhdrOptions const &opt) {
   }
 
   Nrrd *base = nrrdNew();
-  airMopAdd(mop, base, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, base, (airMopper)nrrdNix, airMopAlways);
 
-  std::vector<std::vector> data={{1,1,1}};
-  for (int i = 0; i < offset_smooth->axis[1].size-2; i++) {
-    data.push_back({0,0,0});
+  std::vector<double> data = {1,1,1};
+
+  for (int i = 0; i < 3*offset_smooth->axis[1].size-6; i++) {
+    data.push_back(0);
   }
-  data.push_back({1,1,1});
+  data.insert(data.end(), {1,1,1});
 
-  nrrdWrap_va(base, &data, 2, 3, offset_smooth->axis[1].size);
+  double *ptr = data.data();
+  nrrdAxisInfoCopy(base, offset_smooth, NULL, NRRD_AXIS_INFO_ALL);
+
+  if (nrrdWrap_va(base, data.data(), nrrdTypeFloat, 2, 3, offset_smooth->axis[1].size)) {
+    char *msg;
+    char *err = biffGetDone(NRRD);
+
+    sprintf(msg, "Error wrapping data vector: %s", err);
+
+    airMopAdd(mop, err, airFree, airMopAlways);
+    airMopError(mop);
+
+    throw LSPException(msg, "corrnhdr.cpp", "corrnhdr_main");
+  };
 
   Nrrd *offset_smooth1 = nrrdNew();
+  airMopAdd(mop, offset_smooth1, (airMopper)nrrdNuke, airMopAlways);
+
+  airMopSingleOkay(mop, rsmc);
+  rsmc = nrrdResampleContextNew();
+  airMopAdd(mop, rsmc, (airMopper)nrrdResampleContextNix, airMopAlways);
 
   kparm[0] = 1.5;
   if (nrrdResampleInputSet(rsmc, base) ||
@@ -212,7 +233,78 @@ void corrnhdr_main(corrnhdrOptions const &opt) {
   nrrdUnquantize(offset_smooth1, offset_smooth1, nrrdTypeDouble);
 
 
-  nrrdArithIterTernaryOp();
+  NrrdIter *n1 = nrrdIterNew();
+  NrrdIter *n2 = nrrdIterNew();
+  NrrdIter *n3 = nrrdIterNew();
+
+  airMopAdd(mop, n1, airFree, airMopAlways);
+  airMopAdd(mop, n2, airFree, airMopAlways);
+  airMopAdd(mop, n3, airFree, airMopAlways);
+
+  nrrdIterSetOwnNrrd(n1, offset_smooth1);
+  nrrdIterSetOwnNrrd(n2, offset_smooth);
+  nrrdIterSetOwnNrrd(n3, offset_n);
+
+  Nrrd *offset_smooth2 = nrrdNew();
+  airMopAdd(mop, offset_smooth2, (airMopper)nrrdNuke, airMopAlways);
+
+  nrrdArithIterTernaryOp(offset_smooth2, nrrdTernaryOpLerp, n1, n2, n3);
+
+  // TODO: In the beginning of this function make sure that this dir exists.
+  dir = current_path().string() + "/nhdr/";
+
+  for (size_t i = 0; i <= num; i++) {
+    ss.str(""); ss.clear();
+    ss << std::setw(3) << std::setfill('0') << i;
+    std::string s_num(ss.str());
+
+    path file = dir + s_num + ".nhdr";
+    if (exists(file)) {
+      Nrrd *old_nrrd = safe_load_nrrd(file.string());
+      Nrrd *new_nrrd = nrrdNew();
+
+      airMopAdd(mop, old_nrrd, (airMopper)nrrdNuke, airMopAlways);
+      airMopAdd(mop, new_nrrd, (airMopper)nrrdNuke, airMopAlways);
+
+      if (nrrdCopy(new_nrrd, old_nrrd)) {
+        char *msg;
+        char *err = biffGetDone(NRRD);
+
+        sprintf(msg, "Error copying nrrd: %s", err);
+
+        airMopAdd(mop, err, airFree, airMopAlways);
+        airMopError(mop);
+
+        throw LSPException(msg, "corrnhdr.cpp", "corrnhdr_main");
+      }
+
+      double xs = old_nrrd->axis[0].spacing;
+      double ys = old_nrrd->axis[1].spacing;
+      double zs = old_nrrd->axis[2].spacing;
+
+      double x_scale = nrrdDLookup[offset_smooth2->type](offset_smooth2->data, i*3);
+      double y_scale = nrrdDLookup[offset_smooth2->type](offset_smooth2->data, i*3+1);
+      double z_scale = nrrdDLookup[offset_smooth2->type](offset_smooth2->data, i*3+2);
+
+      auto *origin = AIR_MALLOC(3, double);
+      origin[0] = xs*x_scale;
+      origin[1]= ys*y_scale;
+      origin[2]= zs*z_scale;
+
+      nrrdSpaceOriginSet(new_nrrd, origin);
+      new_nrrd->type = nrrdTypeUShort;
+
+      std::string o_name = dir + s_num + "-corr.nhdr";
+      nrrdSave(o_name.c_str(), new_nrrd, NULL);
+
+      airMopSingleOkay(mop, old_nrrd);
+      airMopSingleOkay(mop, new_nrrd);
+      free(origin);
+    } else {
+      std::cout << "[corrnhdr] WARN: " << file.string() << " does not exist." << std::endl;
+    }
+  }
+
   airMopOkay(mop);
 
 }
