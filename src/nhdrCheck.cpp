@@ -48,11 +48,11 @@ void nhdr_check_main(nhdrCheckOptions const &opt) {
         }
       }
 
-      std::sort(line_files.begin(), line_files.end(), [] (const path& lhs, const path& rhs) {
-          int v_lhs = stoi(std::regex_replace(lhs.filename().string(), std::regex(R"([\D])"), ""));
-          int v_rhs = stoi(std::regex_replace(rhs.filename().string(), std::regex(R"([\D])"), ""));
-          return v_lhs < v_rhs;
-      });
+//      std::sort(line_files.begin(), line_files.end(), [] (const path& lhs, const path& rhs) {
+//          int v_lhs = stoi(std::regex_replace(lhs.filename().string(), std::regex(R"([\D])"), ""));
+//          int v_rhs = stoi(std::regex_replace(rhs.filename().string(), std::regex(R"([\D])"), ""));
+//          return v_lhs < v_rhs;
+//      });
     } else {
       throw LSPException(proj_dir.string() + " does not exist or is not a directory.", "nhdrCheck.cpp", "nhdr_check_main");
     }
